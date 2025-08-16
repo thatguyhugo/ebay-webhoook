@@ -1,14 +1,28 @@
-export default function handler(req, res) {
-  if (req.method === "POST") {
-    const VERIFY_TOKEN = process.env.VERIFICATION_TOKEN || "replace_with_your_token";
+const crypto = require("crypto");
 
-    if (req.body?.challenge && req.body?.verificationToken === VERIFY_TOKEN) {
-      return res.status(200).json({ challenge: req.body.challenge });
+const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
+const ENDPOINT_URL = process.env.ENDPOINT_URL; // must match exactly what you give eBay
+
+module.exports = async (req, res) => {
+  // eBay first calls GET ?challenge_code=...
+  if (req.method === "GET") {
+    const challengeCode = req.query.challenge_code || req.query.challengeCode;
+    if (challengeCode) {
+      const h = crypto.createHash("sha256");
+      h.update(challengeCode);
+      h.update(VERIFICATION_TOKEN);
+      h.update(ENDPOINT_URL);
+      const challengeResponse = h.digest("hex");
+      res.setHeader("Content-Type", "application/json");
+      return res.status(200).send(JSON.stringify({ challengeResponse }));
     }
-
-    console.log("eBay Webhook Event:", req.body);
-    return res.status(200).send("Event received");
+    return res.status(200).send("OK");
   }
 
-  res.status(405).send("Method Not Allowed");
-}
+  // After validation, eBay will POST notifications here
+  if (req.method === "POST") {
+    return res.status(200).send("OK");
+  }
+
+  return res.status(405).send("Method Not Allowed");
+};
