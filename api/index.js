@@ -5,7 +5,7 @@ const ENDPOINT_URL = process.env.ENDPOINT_URL || "";
 
 module.exports = (req, res) => {
   if (req.method === "GET") {
-    const challengeCode = req.query.challenge_code || req.query.challengeCode;
+    const challengeCode = req.query.challenge_code;
     if (challengeCode) {
       const h = crypto.createHash("sha256");
       h.update(challengeCode);
@@ -14,9 +14,10 @@ module.exports = (req, res) => {
       const challengeResponse = h.digest("hex");
 
       res.setHeader("Content-Type", "application/json");
-      return res.status(200).send(JSON.stringify({ challengeResponse }));
+      return res.status(200).send({ challengeResponse });
     }
-    return res.status(200).send("OK");
+
+    return res.status(400).send("Missing challenge_code");
   }
 
   if (req.method === "POST") {
