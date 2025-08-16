@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
-const ENDPOINT_URL = process.env.ENDPOINT_URL; // must match exactly what you give eBay
+const ENDPOINT_URL = process.env.ENDPOINT_URL; // must match exactly what you put in eBay
 
 module.exports = async (req, res) => {
   // eBay first calls GET ?challenge_code=...
@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
     return res.status(200).send("OK");
   }
 
-  // After validation, eBay will POST notifications here
+  // After validation eBay will POST here
   if (req.method === "POST") {
     return res.status(200).send("OK");
   }
